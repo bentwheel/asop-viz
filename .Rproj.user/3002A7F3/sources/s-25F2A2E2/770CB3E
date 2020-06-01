@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1590989917466.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "770CB3E",
+    "lastKnownWriteTime" : 1590998817,
+    "last_content_update" : 1590998817362,
+    "path" : "~/git-local/asop-viz/Visualizing the ASOPs.Rmd",
+    "project_path" : "Visualizing the ASOPs.Rmd",
+    "properties" : {
+        "chunk_output_type" : "inline",
+        "cursorPosition" : "193,0",
+        "scrollLine" : "187"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
