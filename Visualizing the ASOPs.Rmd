@@ -213,11 +213,11 @@ timeline <- timeline.data %>%
   ggplot(aes(x = as.Date(eff_date), 
              y = display_height,
              label = wrapper(display_title))) +
+  geom_hline(color = "black", yintercept = 0, size=1, alpha=0.6) +
   geom_point(size=1.2, aes(color=category.level)) +
-  geom_hline(color = "black", yintercept = 0, size=1) +
   geom_label_repel(aes(fill = category.level), 
                    color="white", size=2, segment.color = "black",
-                   alpha=.95, max.iter = 4000, segment.alpha = 0.7) +
+                   alpha=.95, max.iter = 4000, segment.alpha = 0.6) +
   labs(title = "A Timeline of the Actuarial Standards of Practice",
        x = "Date Effective",
        y = "",
@@ -230,7 +230,8 @@ timeline <- timeline.data %>%
                breaks=seq.Date(from=ymd(19950101), to=ymd(20221231), by="4 years"),
                labels = scales::date_format(format="%Y")) +
   theme(legend.position="bottom", legend.box = "horizontal", legend.text=element_text(size=7),
-        legend.title = element_text(size = 8))
+        legend.title = element_text(size = 8), axis.text.y = element_blank())
+        
 
 timeline
 
@@ -258,6 +259,8 @@ grid <- grid.data %>%
   scale_fill_viridis_d()
 
 grid
+
+ggsave(grid)
 
 
 ```
