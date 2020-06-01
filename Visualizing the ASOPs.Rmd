@@ -200,7 +200,6 @@ So, now, let's make some pretty visualizations! The first thing I'm going to do 
 library(ggalt)
 library(ggrepel)
 
-
 timeline.data <- final_asop_summary_table %>% 
   distinct(asop_number, asop_title, eff_date, category.level, repealed) %>% 
   filter(!repealed) %>% 
