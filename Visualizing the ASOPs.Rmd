@@ -260,7 +260,7 @@ grid <- grid.data %>%
 
 grid
 
-ggsave(grid)
+ggsave("grid.png", height=7, width=7)
 
 
 ```
