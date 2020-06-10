@@ -7,10 +7,10 @@ page](https://github.com/bentwheel/asop-viz).
 What do actuaries do?
 ---------------------
 
-I volunteered (with some eagerness) to teach the R training sessions to
+I volunteered (with some eagerness) to deliver the R training sessions to
 the bright and talented “virtual” actuarial intern cohorts we have at
 Cigna this year in our Philadelphia office, and I wanted to kick off the
-presentation with a showcase of the flexibility and power that the R
+presentation with a brief showcase of the flexibility and utility that the R
 language and RStudio IDE can bring to a project, all while providing my
 spin on the so-called million-dollar question: *“What do actuaries do?”*
 
