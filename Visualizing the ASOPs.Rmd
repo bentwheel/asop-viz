@@ -1,29 +1,50 @@
 ---
 title: "Visualizing the ASOPs"
 author: "C. Seth Lester, ASA"
-output: html_notebook
+output: md_document
 ---
 
 This content was generated using a [R Markdown](http://rmarkdown.rstudio.com) Notebook. The code / .RMD file used to build this page, as well as additional documentation and resources, are all located on [my personal GitHub page](https://github.com/bentwheel/asop-viz).
 
-# Overview & Purpose
+## What do actuaries do?
 
-Insert introduction about the Actuarial Standard of Practice, brief history and description, some popular ones, with links.
+I volunteered (with some eagerness) to teach the R training sessions to the bright and talented "virtual" actuarial intern cohorts we have at Cigna this year in our Philadelphia office, and I wanted to kick off the presentation with a showcase of the flexibility and power that the R language and RStudio IDE can bring to a project, all while providing my spin on the so-called million-dollar question: *"What do actuaries do?"*
 
-I have often remarked on the importance of ASOP No. 23 that governs actuarial standards of practice concerning data quality - in particular, when and when *not* to use data to perform actuarial work and analyses. In fact, my gut tells me that ASOP No. 23 is likely the most frequently-referenced ASOP. Altogether, meta-information about the fifty-six (soon to be fifty-seven) ASOPs tells a story about what standards described within the individual ASOPs are most central to actuarial practices today, and broadly describes the myriad actuarial practice areas with respect to the ASOPs shared between them.
+**tl;dr: I've used a web scraper and a short little bit of R code to web scrape the Actuarial Standards of Practice website and have put together some visualizations of meta-information concerning how the ASOPs are interconnected and a timeline of when the ASOPs in effect today became effective.**
 
-In the following code (which you can clone from Git and follow along with on your own, or just scroll-through here), we will:
+First off, I've only been asking this question for a handful of years myself, so I don't intend for my analysis here to come across with a veneer of deep expertise; nor do I mean to pose this question with a tremendous amount of context, and I certainly don't intend to address the question relative to what other financial professionals do, or what data scientists do, though I admittedly have some strong feelings about those questions, too. And, speaking of feelings, I'm obliged to state that the opinions reflected within this document/post certainly do *not* necessarily reflect the views of my employer. Also, the are not intended to convey or otherwise represent the views of the [Society of Actuaries](http://soa.org), the [Actuarial Standards Board](http://www.actuarialstandardsboard.org/), or the [American Academy of Actuaries](http://actuary.org).
 
-1. Use the rvest package in conjunction with the SelectorGadget Chrome Extension to efficiently scrape meta-information from the Actuarial Standards of Practice hosted on the Actuarial Standards Board website.
+## Ontological information is information, too!
+
+I offer up first the fairly uncontroversial proposition that **information about what practices and standards a profession values is embedded in the profession's standards of practice**. Since these implicit value statements of a profession are likely to reflect the consensus of experts operating within that profession, I argue that the question *"What do actuaries do?"* can be answered by information embedded within the [Actuarial Standards of Practice](http://www.actuarialstandardsboard.org/standards-of-practice/), the living, breathing rule-book of the actuarial profession.
+
+And, if the ASOPs are a living, breathing rule-book of the actuarial profession, do they come about in an order and chronology reflecting the need for the actuarial profession to respond to events such as the passage of the Afforable Care Act or the 2008 Global Financial Crisis? Have you ever wondered how many ASOPs have come effective in the last 10 years? 20 years? *Just how often does the actuarial community update its standards?*
+
+![ASOP Timeline](./timeline.png)
+
+The Actuarial Standards of Practice (hereafter: ASOPs) on the main landing page are helpfully categorized by practice area, labeled with their most recent effective dates, and presented in order with titles. Within each individual ASOP, you'll find the content endorsed by the Actuarial Stnadards Board that is meant to construe a standard of actuarial practice. But one interesting feature of the ASOPs is that they reference one another. In fact, they do this *quite a bit*. And this got me wondering one day: *which ASOP is referenced the most?* 
+
+![ASOP Reference Grid](./grid.png)
+
+As we can see, the ASOPs most heavily referenced are ASOPs No. 23 and 41, regarding **Data Quality** and **Actuarial Communications**. These ASOPs are at the heart of the interconnected network of ASOPs. Also, note that ASOPs 23 and 41 cite no other ASOPs besides one another, so not only are they well-referenced by all the other ASOPs, but you can think of them as "axiomatic" ASOPs, too.
+
+The charts above use meta-information and information about the ontological structure of the ASOPs (i.e., how they are interconnected) to answer these questions, and the code to develop them follows. Finally, I would go out on a limb and conclude from all this that ASOPs 23 and 41 are *foundational* to the actuarial profession (no matter your practice area). 
+
+So when it comes to the initial question of *"What do actuaries do?*, it's abundantly clear that **data stewardship** and **communication** are critical pillars of all actuarial practice.
+
+## The code
+
+In the following code (which you can clone from Git, linked above, and follow along with on your own, or just scroll-through here), we will:
+
+1. Use the **rvest** package in conjunction with the **SelectorGadget Chrome Extension** to efficiently scrape meta-information from the Actuarial Standards of Practice hosted on the Actuarial Standards Board website.
 2. Assemble a corpus of data to build a visual representation of this meta-information.
 3. Use various visualizations to capture insights and ontological meta-information concerning the ASOPs as they are written today.
 
-While my initial goal from this project was to showcase the hunch I've long had that ASOP No. 23 is the most internally referenced ASOP, the project goal has expanded to show the value in analyzing meta-information and the ontological relationships between otherwise seemingly mundane representations of information.
+While my initial goal from this project was to showcase the hunch I've long had that ASOP No. 23 is the most internally referenced ASOP, the project goal has expanded to show the value in analyzing meta-information and the ontological relationships between otherwise seemingly mundane representations of information that we interface with regularly.
 
-# Getting ASOP Meta-Information
+## Getting ASOP Meta-Information
 
-We will be using rvest to scrape information from the Actuarial Standards Board's website.
-
+We will be using **rvest** to scrape information from the Actuarial Standards Board's website, and we'll be using the **tidyverse** suite of packages to do a lot of the data twisting and wrangling required to render the charts above in *ggplot*.
 
 ```{r get-asop-data-1}
 
@@ -111,11 +132,11 @@ I've generally found that it's always a good idea to sketch out a rough idea of 
 
 This field will list one record per mention of each ASOP within its contents, with repetition allowed. We'll use purrr package features to consolidate and summarize the total number of references within each document when it's all done.
 
-From this, I will do a little more twisting to build out a simple 56 x 56 reference grid, showing the number of references made by row-listed ASOPs about their column-listed counterparts. If this doesn't track now, just hang in there. 
+From this, I will do a little more twisting to build out a simple 56 x 56 reference grid, showing the number of references made by row-listed ASOPs about their column-listed counterparts. (If this doesn't track now, just hang in there.)
 
 Though this reference grid is useful for displaying, it's almost absolutely useless for making meaningful vizualizations. For that, we'll need to tidy the data: in other words, we'll pivot on our reference grid until every single piece of information exists on just one line. In other words, we'll need to arrive at a final format that has three primary fields: asop_number, asop_refs, and num_refs.
 
-We can choose to left-join on our summary ASOP meta-information table we built above if ew want to embellish our visualizations of the ASOPs any further.
+We can choose to left-join on our summary ASOP meta-information table we built above if we want to embellish our visualizations of the ASOPs any further.
 
 
 ```{r get-asop-data-2}
@@ -164,7 +185,7 @@ asop_references_nested <- asop_reference_urls %>%
   map(map_reference_tibble) %>% 
   enframe()
 
-# Finally, we left-join back to our primary table:
+# Finally, we left-join back to our primary table
 final_asop_summary_table <- final_asop_summary_table %>% 
   left_join(asop_references_nested, by=c("asop_number"="name"))
 
@@ -192,13 +213,18 @@ validate_data2 <- tibble(asop_number=seq(1:56)) %>%
 
 ```
 
+## Drawing plots 
+
 Generally I've spot-checked some of the other records and I have a pretty good feeling overall about the graphical representation we've set out to do.
 
 So, now, let's make some pretty visualizations! The first thing I'm going to do is put together a quick timeline of ASOPs, since I have that information readily available right off the bat.
 
-```{r asop-timeline-viz}
+```{r asop-timeline-viz, echo=TRUE}
 library(ggalt)
 library(ggrepel)
+library(ggthemes)
+library(extrafont)
+#font_import()
 
 timeline.data <- final_asop_summary_table %>% 
   distinct(asop_number, asop_title, eff_date, category.level, repealed) %>% 
@@ -213,11 +239,12 @@ timeline <- timeline.data %>%
   ggplot(aes(x = as.Date(eff_date), 
              y = display_height,
              label = wrapper(display_title))) +
-  geom_hline(color = "black", yintercept = 0, size=1, alpha=0.6) +
+  geom_hline(color = "red", yintercept = 0, size=1, alpha=0.6) +
   geom_point(size=1.2, aes(color=category.level)) +
   geom_label_repel(aes(fill = category.level), 
-                   color="white", size=2, segment.color = "black",
-                   alpha=.95, max.iter = 4000, segment.alpha = 0.6) +
+                   color="white", size=1.9, segment.color = "black",
+                   alpha=.95, max.iter = 4000, segment.alpha = 0.6,
+                   show.legend =F) +
   labs(title = "A Timeline of the Actuarial Standards of Practice",
        x = "Date Effective",
        y = "",
@@ -227,19 +254,21 @@ timeline <- timeline.data %>%
   scale_fill_viridis_d() +
   scale_color_viridis_d() +
   scale_x_date(limits = c(ymd(19950101), ymd(20201231)), 
-               breaks=seq.Date(from=ymd(19950101), to=ymd(20221231), by="4 years"),
+               breaks=seq.Date(from=ymd(19950101), to=ymd(20221231), by="2 years"),
                labels = scales::date_format(format="%Y")) +
+  theme_tufte() +
   theme(legend.position="bottom", legend.box = "horizontal", legend.text=element_text(size=7),
-        legend.title = element_text(size = 8), axis.text.y = element_blank())
+        legend.title = element_text(size = 8), axis.text.y = element_blank(),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.ticks.y = element_blank(), text=element_text(family="Courier Prime")) 
         
-
 timeline
 
-ggsave("timeline.png", width=14, height=7)
+ggsave("timeline.png", width=14, height=5)
 
 ```
 
-```{r grid-view}
+```{r grid-view, echo=TRUE}
 
 grid.data <- final_asop_summary_table %>% 
   unnest(value) %>% 
@@ -247,21 +276,35 @@ grid.data <- final_asop_summary_table %>%
   summarize(count_refs = n()) %>% 
   filter(asop_number != asop_refs) %>% 
   mutate(asop_refs = as.numeric(asop_refs),
-         display_name_x = paste0("ASOP No. ", asop_number),
-         display_name_y = paste0("ASOP No. ", asop_refs)) 
+         display_name_x = paste0("ASOP No. ", formatC(asop_number, "%0d", width = 2)),
+         display_name_y = paste0("ASOP No. ", formatC(asop_refs, "%0d", width=2))) 
 
 grid <- grid.data %>% 
   ggplot(aes(x = fct_reorder(display_name_x, desc(asop_number)), 
-             y = reorder(display_name_y, asop_refs, sum))) + 
-  theme(axis.text.x = element_text(angle=90)) +
-  coord_flip() +
-  geom_tile(aes(fill = category.level)) +
-  scale_fill_viridis_d()
+             y = fct_reorder(display_name_y, asop_refs),
+             fill = as.integer(count_refs))) + 
+  geom_tile(aes(width = .9, height=.9), size = 0.3, color="grey") +
+  labs(title = "How Do ASOPs Reference Other ASOPs?",
+       y = "...reference these ASOPs",
+       x = "These ASOPs...",
+       fill = "Number of unique references",
+       caption = "Source: Actuarial Standards Board (www.actuarialstandardsboard.org)") +
+  scale_fill_viridis_c(label = scales::comma) +
+  theme_tufte() +
+  theme(legend.text=element_text(size=7),
+        text = element_text(family="Courier Prime"),
+        legend.title = element_text(size = 8),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle=90),
+        axis.line = element_line(color="black")) +
+  guides(fill = guide_colorbar(barwidth = 0.75, barheight = 15,
+                               frame.color = "black",
+                               direction = "vertical")) +
+  coord_flip()
 
 grid
 
-ggsave("grid.png", height=7, width=7)
-
+ggsave("grid.png", height=13, width=11)
 
 ```
 
