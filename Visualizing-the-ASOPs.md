@@ -4,8 +4,7 @@ used to build this page, as well as additional documentation and
 resources, are all located on [my personal GitHub
 page](https://github.com/bentwheel/asop-viz).
 
-What do actuaries do?
----------------------
+## What do actuaries do?
 
 I volunteered (with some eagerness) to teach the R training sessions to
 the bright and talented “virtual” actuarial intern cohorts we have at
@@ -34,8 +33,7 @@ Actuaries](http://soa.org), the [Actuarial Standards
 Board](http://www.actuarialstandardsboard.org/), or the [American
 Academy of Actuaries](http://actuary.org).
 
-Ontological information is information, too!
---------------------------------------------
+## Ontological information is information, too!
 
 I offer up first the fairly uncontroversial proposition that
 **information about what practices and standards a profession values is
@@ -73,7 +71,11 @@ As we can see, the ASOPs most heavily referenced are ASOPs No. 23 and
 ASOPs are at the heart of the interconnected network of ASOPs. Also,
 note that ASOPs 23 and 41 cite no other ASOPs besides one another, so
 not only are they well-referenced by all the other ASOPs, but you can
-think of them as “axiomatic” ASOPs, too.
+think of them as “axiomatic” ASOPs, too. This “axiomatic” nature of
+ASOPs 23 and 41 is best viewed when the interrelationships between the
+ASOPs are plotted in a network graph.
+
+![ASOP Reference Network Graph](./asop_netgraph.png)
 
 The charts above use meta-information and information about the
 ontological structure of the ASOPs (i.e., how they are interconnected)
@@ -86,13 +88,12 @@ So when it comes to the initial question of *"What do actuaries do?*,
 it’s abundantly clear that **data stewardship** and **communication**
 are critical pillars of all actuarial practice.
 
-The code
---------
+## The code
 
 In the following code (which you can clone from Git, linked above, and
 follow along with on your own, or just scroll-through here), we will:
 
-1.  Use the **rvest** package in conjunction with the **SelectorGadget
+1.  Use the `rvest` package in conjunction with the **SelectorGadget
     Chrome Extension** to efficiently scrape meta-information from the
     Actuarial Standards of Practice hosted on the Actuarial Standards
     Board website.
@@ -108,25 +109,24 @@ meta-information and the ontological relationships between otherwise
 seemingly mundane representations of information that we interface with
 regularly.
 
-Getting ASOP Meta-Information
------------------------------
+### Getting ASOP Meta-Information
 
-We will be using **rvest** to scrape information from the Actuarial
-Standards Board’s website, and we’ll be using the **tidyverse** suite of
+We will be using `rvest` to scrape information from the Actuarial
+Standards Board’s website, and we’ll be using the `tidyverse` suite of
 packages to do a lot of the data twisting and wrangling required to
-render the charts above in *ggplot*.
+render the charts above in `ggplot`.
 
     # Load the tidyverse package to get our usual suite of powerful data-wranglin', piping, plotting, and otherwise immensely useful toolkits.
     library(tidyverse)
 
-    ## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+    ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
 
-    ## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
-    ## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
-    ## ✓ tidyr   1.0.0     ✓ stringr 1.4.0
-    ## ✓ readr   1.3.1     ✓ forcats 0.4.0
+    ## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
+    ## ✓ tibble  3.0.4     ✓ dplyr   1.0.2
+    ## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
+    ## ✓ readr   1.4.0     ✓ forcats 0.5.0
 
-    ## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -150,18 +150,18 @@ render the charts above in *ggplot*.
     asb_main_landing_url <- "http://www.actuarialstandardsboard.org/standards-of-practice/"
     asb_main_landing_html <- read_html(asb_main_landing_url)
 
-    # Using SelectorGadget, I've identified the hyperlinks to all the 56 ASOP's from this page
+    # Using SelectorGadget, I've identified the hyperlinks to all the 50-some ASOP's from this page
     asop_links <- html_nodes(asb_main_landing_html, ".item-meta-links a:nth-child(1)")
 
-    # asop_links is a list object of 56 hypertext tags to the 56 published ASOPs that are either in effect, repealed, or soon-to-be-effective (including the new Modeling ASOP!)
+    # asop_links is a list object of 50-some hypertext tags to the 50-some published ASOPs that are either in effect, repealed, or soon-to-be-effective (including the new Modeling ASOP!)
 
-    # Now we parse the markup to get to 56 unique URL string values corresponding with the href attribute contained in our 56-element list of <a> tags
+    # Now we parse the markup to get to X unique URL string values corresponding with the href attribute contained in our X-element list of <a> tags
     asop_urls <- html_attrs(asop_links)
 
     # While we're at it, we're going to want to make sure we have our ontological ducks in a row when it comes time to organize the data. So, let's stand up a quick reference tibble that assigns ASOP numbers to ASOP links.
     asop_table <- asop_urls %>% 
       tibble(asop_urls = unlist(.)) %>% 
-      mutate(asop_number = row_number()) 
+      mutate(index = row_number()) 
 
     # Let's get titles now and build this into our data table
     asop_titles <- html_nodes(asb_main_landing_html, "h4") %>% 
@@ -169,10 +169,10 @@ render the charts above in *ggplot*.
 
     asop_table <- asop_titles %>% 
       tibble(asop_title = .) %>% 
-      mutate(asop_number = row_number()) %>% 
+      mutate(index = row_number()) %>% 
       inner_join(asop_table)
 
-    ## Joining, by = "asop_number"
+    ## Joining, by = "index"
 
     # the last line of this chain is an inner- instead of left-join - the purpose here is to shed some none-ASOPs that we picked up in our scrape that are rendered under <h4> HTML tags.
 
@@ -186,9 +186,9 @@ render the charts above in *ggplot*.
     ## 
     ## Attaching package: 'lubridate'
 
-    ## The following object is masked from 'package:base':
+    ## The following objects are masked from 'package:base':
     ## 
-    ##     date
+    ##     date, intersect, setdiff, union
 
     # Bear with me, this is kind of a mess and there might be a better way to do this, but here we go!
     asop_meta <- html_nodes(asb_main_landing_html, ".item-meta")
@@ -197,7 +197,7 @@ render the charts above in *ggplot*.
       enframe() %>% 
       filter(str_sub(value, 1, 4) != "View") %>% 
       separate(value, into=c("meta_key", "meta_value"), sep=": ") %>% 
-      mutate(asop_number = ceiling(name/4)) %>% 
+      mutate(index = ceiling(name/4)) %>% 
       select(-name) %>% 
       pivot_wider(names_from=meta_key, values_from=meta_value)
 
@@ -218,13 +218,12 @@ render the charts above in *ggplot*.
              category.level = as_factor(str_replace_all(Category, "[:space:]", ", "))) %>% 
       select(-Category, -`Effective Date`)
 
-
     # Finally we can stick this on the end of our existing table
     final_asop_summary_table <- asop_table %>% 
       left_join(asop_metadata) %>% 
       select(-.)
 
-    ## Joining, by = "asop_number"
+    ## Joining, by = "index"
 
 And with that, we’ve got a pretty great summary table of the ASOPs,
 their titles, their practice area relevance metadata, and their
@@ -292,26 +291,30 @@ further.
       # Union all our referenced ASOP nos.
       asop_all_refs <- asop_refs %>% 
         union_all(asop_mult_refs1) %>% 
-        union_all(asop_mult_refs2)
+        union_all(asop_mult_refs2) %>% 
+        mutate(asop_refs = as.numeric(asop_refs))
       
       # return our tibble
       asop_all_refs
     }
 
+    map_asop_number <- function(url) {
+      
+      asop_url <- url
+      asop_html <- read_html(asop_url)
+      asop_content <- toString(html_text(html_nodes(asop_html, "h1")[[2]]))
+      
+      out <- as.numeric(str_match_all(asop_content, "(?<=No. )[:digit:]{1,2}|(?<=NO. )[:digit:]{1,2}"))
+    }
+
     # Let's test our function on the well-known Data Quality ASOP
     # foo <- map_reference_tibble(final_asop_summary_table$asop_urls[23])
 
-    # Looks like we're in business. Let's run the map on the entire ASOP meta-table.
-    asop_reference_urls <- as.list(final_asop_summary_table$asop_urls)
-
     # This one takes some time to run - but not too long. Enjoy a nice snack and think about how much more this rules than a for loop
-    asop_references_nested <- asop_reference_urls %>% 
-      map(map_reference_tibble) %>% 
-      enframe()
 
-    # Finally, we left-join back to our primary table
-    final_asop_summary_table <- final_asop_summary_table %>% 
-      left_join(asop_references_nested, by=c("asop_number"="name"))
+    summary_with_refs <- final_asop_summary_table %>% 
+      mutate(asop_number = map(asop_urls, map_asop_number),
+             refs = map(asop_urls, map_reference_tibble))
 
 Whew! Wasn’t that fun? So now we have all the information we need to
 start putting together some visualizations. But first, wouldn’t it be a
@@ -322,24 +325,26 @@ First, the ASOPs are heavily self-referential. So we should make sure
 that a good number of the reference tables contains at least one
 reference to itself.
 
-    validate_data1 <-final_asop_summary_table %>% 
+    validate_data1 <-summary_with_refs %>% 
       ungroup() %>% 
-      unnest(value) %>% 
+      unnest(refs) %>% 
       group_by(asop_number, asop_refs) %>% 
       summarize(count_refs = n()) %>% 
       ungroup() %>% 
       filter(asop_number == asop_refs) %>% 
-      distinct(asop_number) 
+      distinct(asop_number) %>% 
+      mutate(asop_number = as.numeric(asop_number))
+
+    ## `summarise()` regrouping output by 'asop_number' (override with `.groups` argument)
 
     validate_data2 <- tibble(asop_number=seq(1:56)) %>% 
       anti_join(validate_data1)
 
     ## Joining, by = "asop_number"
 
-    # ASOPs 26, 29, 30, 32, 33, 39, 51 appear to not contain the string literal "ASOP No. X", where X = their own number. I spot checked them all manually and this is true!
+    # ASOPs 26, 29, 30, 33, 39, 51 appear to not contain the string literal "ASOP No. X", where X = their own number. I spot checked them all manually and this is true!
 
-Drawing plots
--------------
+## Drawing plots
 
 Generally I’ve spot-checked some of the other records and I have a
 pretty good feeling overall about the graphical representation we’ve set
@@ -367,7 +372,7 @@ information readily available right off the bat.
 
     #font_import()
 
-    timeline.data <- final_asop_summary_table %>% 
+    timeline.data <- summary_with_refs %>% 
       distinct(asop_number, asop_title, eff_date, category.level, repealed) %>% 
       filter(!repealed) %>% 
       arrange(eff_date) %>% 
@@ -384,7 +389,7 @@ information readily available right off the bat.
       geom_point(size=1.2, aes(color=category.level)) +
       geom_label_repel(aes(fill = category.level), 
                        color="white", size=1.9, segment.color = "black",
-                       alpha=.95, max.iter = 4000, segment.alpha = 0.6,
+                       alpha=.95, max.iter = 10000, segment.alpha = 0.6,
                        show.legend =F) +
       labs(title = "A Timeline of the Actuarial Standards of Practice",
            x = "Date Effective",
@@ -394,7 +399,7 @@ information readily available right off the bat.
            caption = "Source: Actuarial Standards Board (www.actuarialstandardsboard.org)") +
       scale_fill_viridis_d() +
       scale_color_viridis_d() +
-      scale_x_date(limits = c(ymd(19950101), ymd(20201231)), 
+      scale_x_date(limits = c(ymd(19950101), ymd(20211231)), 
                    breaks=seq.Date(from=ymd(19950101), to=ymd(20221231), by="2 years"),
                    labels = scales::date_format(format="%Y")) +
       theme_tufte() +
@@ -407,16 +412,29 @@ information readily available right off the bat.
 
 ![](Visualizing-the-ASOPs_files/figure-markdown_strict/asop-timeline-viz-1.png)
 
-    ggsave("timeline.png", width=14, height=5)
+    #ggsave("timeline.png", width=14, height=5)
 
-    grid.data <- final_asop_summary_table %>% 
-      unnest(value) %>% 
-      group_by(asop_number, asop_title, category.level, asop_refs) %>% 
+    titles <- summary_with_refs %>% 
+      filter(eff_date <= ymd(20201231)) %>% 
+      distinct(asop_ref_title = asop_title, asop_refs= asop_number) %>% 
+      unnest(asop_refs)
+
+    grid.data <- summary_with_refs %>% 
+      unnest(asop_number, refs) %>% 
+      group_by(asop_number, asop_title, category.level, asop_refs, eff_date) %>% 
       summarize(count_refs = n()) %>% 
+      ungroup() %>% 
       filter(asop_number != asop_refs) %>% 
-      mutate(asop_refs = as.numeric(asop_refs),
-             display_name_x = paste0("ASOP No. ", formatC(asop_number, "%0d", width = 2)),
-             display_name_y = paste0("ASOP No. ", formatC(asop_refs, "%0d", width=2))) 
+      mutate(display_name_x = paste0("ASOP No. ", formatC(asop_number, "%0d", width = 2)),
+             display_name_y = paste0("ASOP No. ", formatC(asop_refs, "%0d", width=2))) %>% 
+      left_join(titles)
+
+    ## Warning: unnest() has a new interface. See ?unnest for details.
+    ## Try `df %>% unnest(c(asop_number, refs))`, with `mutate()` if needed
+
+    ## `summarise()` regrouping output by 'asop_number', 'asop_title', 'category.level', 'asop_refs' (override with `.groups` argument)
+
+    ## Joining, by = "asop_refs"
 
     grid <- grid.data %>% 
       ggplot(aes(x = fct_reorder(display_name_x, desc(asop_number)), 
@@ -445,4 +463,124 @@ information readily available right off the bat.
 
 ![](Visualizing-the-ASOPs_files/figure-markdown_strict/grid-view-1.png)
 
-    ggsave("grid.png", height=13, width=11)
+    #ggsave("grid.png", height=13, width=11)
+
+### Code Update: Prepare for the Great Excel Debate!
+
+I wanted to take the opportunity to build out the above reference
+network, but in a more slick graph format to emphasize the
+interconnectedness of the ASOPs - particularly ASOP 41 and 23.
+
+    library(network)
+
+    ## network: Classes for Relational Data
+    ## Version 1.16.1 created on 2020-10-06.
+    ## copyright (c) 2005, Carter T. Butts, University of California-Irvine
+    ##                     Mark S. Handcock, University of California -- Los Angeles
+    ##                     David R. Hunter, Penn State University
+    ##                     Martina Morris, University of Washington
+    ##                     Skye Bender-deMoll, University of Washington
+    ##  For citation information, type citation("network").
+    ##  Type help("network-package") to get started.
+
+    library(sna)
+
+    ## Loading required package: statnet.common
+
+    ## 
+    ## Attaching package: 'statnet.common'
+
+    ## The following object is masked from 'package:base':
+    ## 
+    ##     order
+
+    ## sna: Tools for Social Network Analysis
+    ## Version 2.6 created on 2020-10-5.
+    ## copyright (c) 2005, Carter T. Butts, University of California-Irvine
+    ##  For citation information, type citation("sna").
+    ##  Type help(package="sna") to get started.
+
+    library(RColorBrewer)
+    library(igraph)
+
+    ## 
+    ## Attaching package: 'igraph'
+
+    ## The following objects are masked from 'package:sna':
+    ## 
+    ##     betweenness, bonpow, closeness, components, degree, dyad.census,
+    ##     evcent, hierarchy, is.connected, neighborhood, triad.census
+
+    ## The following objects are masked from 'package:network':
+    ## 
+    ##     %c%, %s%, add.edges, add.vertices, delete.edges, delete.vertices,
+    ##     get.edge.attribute, get.edges, get.vertex.attribute, is.bipartite,
+    ##     is.directed, list.edge.attributes, list.vertex.attributes,
+    ##     set.edge.attribute, set.vertex.attribute
+
+    ## The following objects are masked from 'package:lubridate':
+    ## 
+    ##     %--%, union
+
+    ## The following objects are masked from 'package:dplyr':
+    ## 
+    ##     as_data_frame, groups, union
+
+    ## The following objects are masked from 'package:purrr':
+    ## 
+    ##     compose, simplify
+
+    ## The following object is masked from 'package:tidyr':
+    ## 
+    ##     crossing
+
+    ## The following object is masked from 'package:tibble':
+    ## 
+    ##     as_data_frame
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     decompose, spectrum
+
+    ## The following object is masked from 'package:base':
+    ## 
+    ##     union
+
+    library(intergraph)
+    library(ggplot2)
+    library(GGally)
+
+    ## Registered S3 method overwritten by 'GGally':
+    ##   method from   
+    ##   +.gg   ggplot2
+
+    edges <- grid.data %>% 
+      filter(eff_date <= ymd(20201231)) %>% 
+      mutate(asop_number = as.character(asop_number), 
+             asop_refs = as.character(asop_refs)) %>% 
+      select(from = asop_number, to = asop_refs, weight = count_refs)
+
+    nodes <- summary_with_refs %>% 
+      filter(eff_date <= ymd(20201231)) %>% 
+      unnest(asop_number) %>% 
+      mutate(asop_number = as.character(asop_number)) %>% 
+      select(id = asop_number, asop_title, category.level)
+
+    net <- graph_from_data_frame(d=edges, vertices=nodes, directed=T)
+
+    foo <- ggnet2(net, size="indegree", arrow.size = 3, arrow.gap = .04,
+           color = "category.level", color.palette = "Set3", label=T,
+           label.size=2, edge.alpha = 0.4, mode="fruchtermanreingold",
+           layout.par = list(cell.jitter = 2, niter = 1000))
+
+    foo <- foo +
+      geom_point(aes(color = color), size = foo$data$size/4.5 + 4, color = "white") +
+      geom_point(aes(color = color), size = foo$data$size/4.5 + 4, alpha = 0.5) +
+      geom_point(aes(color = color), size = foo$data$size/4.5 + 2) +
+      geom_text(aes(label = label), color = "black", fontface = "bold", size=3) +
+      guides(size = F) +
+      labs(title = "Network Graph of References Between The ASOPs",
+           color = "ASOP Category") + 
+      theme(legend.title = element_blank())
+
+    #ggsave("asop_netgraph.png", width=10, height=7)

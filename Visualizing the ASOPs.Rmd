@@ -26,7 +26,9 @@ The Actuarial Standards of Practice (hereafter: ASOPs) on the main landing page 
 
 ![ASOP Reference Grid](./grid.png)
 
-As we can see, the ASOPs most heavily referenced are ASOPs No. 23 and 41, regarding **Data Quality** and **Actuarial Communications**. These ASOPs are at the heart of the interconnected network of ASOPs. Also, note that ASOPs 23 and 41 cite no other ASOPs besides one another, so not only are they well-referenced by all the other ASOPs, but you can think of them as "axiomatic" ASOPs, too.
+As we can see, the ASOPs most heavily referenced are ASOPs No. 23 and 41, regarding **Data Quality** and **Actuarial Communications**. These ASOPs are at the heart of the interconnected network of ASOPs. Also, note that ASOPs 23 and 41 cite no other ASOPs besides one another, so not only are they well-referenced by all the other ASOPs, but you can think of them as "axiomatic" ASOPs, too. This "axiomatic" nature of ASOPs 23 and 41 is best viewed when the interrelationships between the ASOPs are plotted in a network graph.
+
+![ASOP Reference Network Graph](./asop_netgraph.png)
 
 The charts above use meta-information and information about the ontological structure of the ASOPs (i.e., how they are interconnected) to answer these questions, and the code to develop them follows. Finally, I would go out on a limb and conclude from all this that ASOPs 23 and 41 are *foundational* to the actuarial profession (no matter your practice area). 
 
@@ -36,15 +38,15 @@ So when it comes to the initial question of *"What do actuaries do?*, it's abund
 
 In the following code (which you can clone from Git, linked above, and follow along with on your own, or just scroll-through here), we will:
 
-1. Use the **rvest** package in conjunction with the **SelectorGadget Chrome Extension** to efficiently scrape meta-information from the Actuarial Standards of Practice hosted on the Actuarial Standards Board website.
+1. Use the ``rvest`` package in conjunction with the **SelectorGadget Chrome Extension** to efficiently scrape meta-information from the Actuarial Standards of Practice hosted on the Actuarial Standards Board website.
 2. Assemble a corpus of data to build a visual representation of this meta-information.
 3. Use various visualizations to capture insights and ontological meta-information concerning the ASOPs as they are written today.
 
 While my initial goal from this project was to showcase the hunch I've long had that ASOP No. 23 is the most internally referenced ASOP, the project goal has expanded to show the value in analyzing meta-information and the ontological relationships between otherwise seemingly mundane representations of information that we interface with regularly.
 
-## Getting ASOP Meta-Information
+### Getting ASOP Meta-Information
 
-We will be using **rvest** to scrape information from the Actuarial Standards Board's website, and we'll be using the **tidyverse** suite of packages to do a lot of the data twisting and wrangling required to render the charts above in *ggplot*.
+We will be using ``rvest`` to scrape information from the Actuarial Standards Board's website, and we'll be using the ``tidyverse`` suite of packages to do a lot of the data twisting and wrangling required to render the charts above in ``ggplot``.
 
 ```{r get-asop-data-1}
 
@@ -69,7 +71,7 @@ asop_urls <- html_attrs(asop_links)
 # While we're at it, we're going to want to make sure we have our ontological ducks in a row when it comes time to organize the data. So, let's stand up a quick reference tibble that assigns ASOP numbers to ASOP links.
 asop_table <- asop_urls %>% 
   tibble(asop_urls = unlist(.)) %>% 
-  mutate(asop_number = row_number()) 
+  mutate(index = row_number()) 
 
 # Let's get titles now and build this into our data table
 asop_titles <- html_nodes(asb_main_landing_html, "h4") %>% 
@@ -116,7 +118,6 @@ asop_metadata <- asop_meta_content %>%
          eff_date=lubridate::mdy(`Effective Date`),
          category.level = as_factor(str_replace_all(Category, "[:space:]", ", "))) %>% 
   select(-Category, -`Effective Date`)
-
 
 # Finally we can stick this on the end of our existing table
 final_asop_summary_table <- asop_table %>% 
@@ -248,7 +249,7 @@ timeline <- timeline.data %>%
   geom_point(size=1.2, aes(color=category.level)) +
   geom_label_repel(aes(fill = category.level), 
                    color="white", size=1.9, segment.color = "black",
-                   alpha=.95, max.iter = 4000, segment.alpha = 0.6,
+                   alpha=.95, max.iter = 10000, segment.alpha = 0.6,
                    show.legend =F) +
   labs(title = "A Timeline of the Actuarial Standards of Practice",
        x = "Date Effective",
@@ -269,7 +270,7 @@ timeline <- timeline.data %>%
         
 timeline
 
-ggsave("timeline.png", width=14, height=5)
+#ggsave("timeline.png", width=14, height=5)
 
 ```
 
@@ -316,13 +317,13 @@ grid <- grid.data %>%
 
 grid
 
-ggsave("grid.png", height=13, width=11)
+#ggsave("grid.png", height=13, width=11)
 
 ```
 
-## Code Update: Prepare for the Great Excel Debate!
+### Code Update: Prepare for the Great Excel Debate!
 
-I wanted to take the opportunity to build out the above reference network, but in a more slick graph format.
+I wanted to take the opportunity to build out the above reference network, but in a more slick graph format to emphasize the interconnectedness of the ASOPs - particularly ASOP 41 and 23.
 
 ```{r network-graph}
 library(network)
@@ -352,7 +353,7 @@ foo <- ggnet2(net, size="indegree", arrow.size = 3, arrow.gap = .04,
        label.size=2, edge.alpha = 0.4, mode="fruchtermanreingold",
        layout.par = list(cell.jitter = 2, niter = 1000))
 
-foo + 
+foo <- foo +
   geom_point(aes(color = color), size = foo$data$size/4.5 + 4, color = "white") +
   geom_point(aes(color = color), size = foo$data$size/4.5 + 4, alpha = 0.5) +
   geom_point(aes(color = color), size = foo$data$size/4.5 + 2) +
@@ -362,7 +363,7 @@ foo +
        color = "ASOP Category") + 
   theme(legend.title = element_blank())
 
-ggsave("asop_netgraph.png", width=10, height=7)
+#ggsave("asop_netgraph.png", width=10, height=7)
 ```
 
 
